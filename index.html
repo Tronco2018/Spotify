@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotify Playlist Viewer</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f7f7f7;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 400px;
+      margin: auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1, h2 {
+      color: #1db954;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+    }
+
+    button {
+      background-color: #1db954;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #168f3c;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Spotify Playlist Viewer</h1>
+  <input type="text" id="playlistUrl" placeholder="Inserisci l'URL della playlist Spotify">
+  <button onclick="getPlaylistTracks()">Ottieni Tracce</button>
+
+  <h2>Canzoni nella Playlist:</h2>
+  <ul id="playlistTracks"></ul>
+
+  <script>
+    async function getPlaylistTracks() {
+      const playlistUrl = document.getElementById('playlistUrl').value;
+
+      // Estrai l'ID della playlist dall'URL
+      const playlistId = playlistUrl.split('/playlist/')[1].split('?')[0];
+
+      // Inserisci qui le tue credenziali client ID e client secret
+      const client_id = '422c5e803c3e44fcb0d385f447634abd';
+      const client_secret = '562dc93071ea4325891a127d4f8eedca';
+
+      // Richiedi l'accesso alle API di Spotify
+      const response = await fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Basic ${btoa(`${client_id}:${client_secret}`)}`,
+        },
+        body: 'grant_type=client_credentials',
+      });
+
+      const data = await response.json();
+      const accessToken = data.access_token;
+
+      // Ottieni le tracce della playlist utilizzando l'access token
+      const playlistResponse = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+
+      const playlistData = await playlistResponse.json();
+      const tracks = playlistData.items;
+
+      // Visualizza i nomi delle tracce nella pagina
+      const playlistTracksElement = document.getElementById('playlistTracks');
+      playlistTracksElement.innerHTML = '';
+
+      tracks.forEach(track => {
+        const trackName = track.track.name;
+        const listItem = document.createElement('li');
+        listItem.textContent = trackName;
+        playlistTracksElement.appendChild(listItem);
+      });
+    }
+  </script>
+</div>
+
+</body>
+</html>
